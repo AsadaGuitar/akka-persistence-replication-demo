@@ -34,7 +34,7 @@ object Users {
     }
   }
 
-  sealed trait Command
+  sealed trait Command extends CborSerializable
   final case class User(name: String, age: Int) extends CborSerializable
   final case class Insert(user: User, created: java.util.Date, replyTo: ActorRef[Inserted]) extends Command
 
