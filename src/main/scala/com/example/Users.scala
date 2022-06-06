@@ -35,12 +35,15 @@ object Users {
   }
 
   sealed trait Command
-  final case class User(name: String, age: Int)
+  final case class User(name: String, age: Int) extends CborSerializable
   final case class Insert(user: User, created: java.util.Date, replyTo: ActorRef[Inserted]) extends Command
-  final case class Inserted(id: String)
+
+  final case class Inserted(id: String) extends CborSerializable
   final case class Show(replyTo: ActorRef[User]) extends Command
 
 }
+
+trait CborSerializable
 
 trait UsersMarshaller extends DefaultJsonProtocol with SprayJsonSupport{
   import spray.json._
