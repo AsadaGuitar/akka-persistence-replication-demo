@@ -28,7 +28,6 @@ object Users {
   final case class Inserting(msg: String)
   final case class Finding(result: Option[User])
 
-
   val TypeKey: EntityTypeKey[Command] = EntityTypeKey[Command]("Counter")
 
   def initSharding(system: ActorSystem[_]): ActorRef[ShardingEnvelope[Command]] =

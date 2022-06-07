@@ -1,7 +1,7 @@
 package com.example
 
 import akka.Done
-import akka.actor.CoordinatedShutdown
+import akka.actor.{CoordinatedShutdown, Props}
 import akka.actor.typed.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Route
@@ -13,8 +13,10 @@ object ForClusterServer {
 
   def startServer(router: Route, port: Int, system: ActorSystem[_]): Unit ={
     import akka.actor.typed.scaladsl.adapter._
+
     implicit val classicalSystem = system.toClassic
     implicit val ec = classicalSystem.dispatcher
+
     val shutdown = CoordinatedShutdown(system)
 
     Http().newServerAt("localhost", port).bind(router).onComplete{
