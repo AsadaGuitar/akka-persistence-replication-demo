@@ -1,37 +1,89 @@
 package com.example
 
-import akka.actor.AddressFromURIString
+import akka.Done
+import akka.actor.{AddressFromURIString, CoordinatedShutdown}
 import akka.actor.typed.ActorSystem
-import com.example.Guardian.EmptyType
+import akka.actor.typed.scaladsl.Behaviors
+import akka.cluster.sharding.typed.ReplicatedShardingExtension
+import akka.http.scaladsl.Http
+import akka.persistence.typed.ReplicaId
+import akka.persistence.typed.scaladsl.ReplicatedEventSourcing
 import com.typesafe.config.{Config, ConfigFactory}
 
+import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.duration.DurationInt
 import scala.jdk.CollectionConverters.ListHasAsScala
+import scala.util.{Failure, Success}
+
 
 object ForClustering {
 
+  trait EmptyType
+
   def main(args: Array[String]): Unit = {
 
-    val seedNodePorts = ConfigFactory.load().getStringList("akka.cluster.seed-nodes")
-      .asScala
-      .flatMap { case AddressFromURIString(s) => s.port }
+    def extractArgs(args: Array[String]) =
+      if (args.length == 2 && args.head.matches("""^\d+$""") && args(1).nonEmpty)
+        Some((args.head.toInt, args(1)))
+      else None
 
-    val ports = args.headOption match {
-      case Some(port) => Seq(port.toInt)
-      case None       => seedNodePorts ++ Seq(0)
-    }
+    extractArgs(args) match {
+      case Some((port, replicaId)) =>
 
-    ports.foreach { port =>
-      val httpPort =
-        if (port > 0) 10000 + port
-        else 0
+        val config = {
+          ConfigFactory.parseString(
+            s"""
+              akka.remote.artery.canonical.port = $port
+              akka.cluster.multi-data-center.self-data-center = $replicaId
+            """
+          ).withFallback(ConfigFactory.load("application.conf"))
+        }
+        implicit val system: ActorSystem[EmptyType] = ActorSystem[EmptyType](Behaviors.empty[EmptyType], "ForClustering", config)
+        implicit val ec: ExecutionContextExecutor = system.executionContext
 
-      val config = configWithPort(port)
-      ActorSystem[EmptyType](Guardian(httpPort), "ForClustering", config)
-    }
+        val allReplicas =
+          config.getStringList("akka.cluster.replication-nodes")
+            .asScala.toSet
+            .map(ReplicaId)
+
+        val replicatedSharding: ReplicatedShardingExtension = ReplicatedShardingExtension(system)
+
+        val httpHost = config.getString("akka.remote.artery.canonical.hostname")
+        val httpPort = port + 10000
+        val shutdown = CoordinatedShutdown(system)
+
+        val counterRouter = new CounterRouter(replicatedSharding, allReplicas, ReplicaId(replicaId))
+
+        Http().newServerAt(httpHost, httpPort).bind(counterRouter.route)
+          .onComplete{
+            case Success(binding) =>
+              val address = binding.localAddress
+              system.log.info(
+                "[START SERVER] online at http://{}:{}/",
+                address.getHostString,
+                address.getPort
+              )
+              shutdown.addTask(
+                CoordinatedShutdown.PhaseClusterShardingShutdownRegion,
+                "http-graceful-shutdown"
+              ) { () =>
+                binding.terminate(10.seconds).map { _ =>
+                  system.log.info(
+                    "[STOP SERVER] http://{}:{}/ graceful shutdown completed",
+                    address.getHostString,
+                    address.getPort
+                  )
+                  Done
+                }
+              }
+            case Failure(exception) =>
+              system.log.error("Failed to bind HTTP endpoint, terminating system", exception)
+              system.terminate()
+          }
+
+        case None => sys.error("Invalid arguments.")
+      }
+
   }
 
-  private def configWithPort(port: Int): Config =
-    ConfigFactory.parseString(s"""
-       akka.remote.artery.canonical.port = $port
-        """).withFallback(ConfigFactory.load())
 }
