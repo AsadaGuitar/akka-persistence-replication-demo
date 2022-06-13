@@ -3,11 +3,9 @@ package com.example
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
 import akka.cluster.sharding.typed.{ReplicatedEntityProvider, ReplicatedShardingExtension, ShardingEnvelope}
-import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, Entity, EntityTypeKey}
 import akka.persistence.query.journal.leveldb.scaladsl.LeveldbReadJournal
 import akka.persistence.typed.{PersistenceId, ReplicaId, ReplicationId}
 import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplicatedEventSourcing}
-import org.iq80.leveldb.util.Snappy.IQ80Snappy
 
 import java.text.SimpleDateFormat
 import java.util.{Date => UtilDate}
@@ -47,26 +45,25 @@ object Counter {
   private def commandHandler(ctx: ActorContext[Command]): (State, Command) => Effect[Event,State] = { (_, command) =>
     command match {
       case CountUp(_, number, replyTo) =>
-        ctx.log.debug("starting-command-phase[CountUp]: count up with number {}", number)
+        ctx.log.info("starting-command-phase[CountUp]: count up with number {}", number)
         val event = CountUpped(number, new UtilDate())
         Effect.persist(event)
           .thenRun{ state =>
-            ctx.log.debug(
+            ctx.log.info(
               "does-event-phase[CountUpped]: count upped number = {}, created = {}, modified = {}",
               state.count, state.modified.fold("nothing")(dateFormat), dateFormat(state.created))
-            val response = Counting(s"""
-                counter is
-                count = ${state.count},
-                created = ${dateFormat(state.created)},
-                modified = ${state.modified.fold("nothing")(dateFormat)}.
-              """)
+            val response = Counting(
+              s"""counter is
+                 |count = ${state.count},
+                 |created = ${dateFormat(state.created)},
+                 |modified = ${state.modified.fold("nothing")(dateFormat)}.""".stripMargin)
             replyTo ! response
           }
       case Find(_, replyTo) =>
-        ctx.log.debug("starting-command-phase[Find]")
+        ctx.log.info("starting-command-phase[Find]")
         Effect.persist(Found)
           .thenRun{ state =>
-            ctx.log.debug(
+            ctx.log.info(
               "does-event-phase[Found]: counter is count = {}, created = {}, modified = {}",
               state.count, dateFormat(state.created), state.modified.fold("nothing")(dateFormat))
             replyTo ! Finding(state.count, state.created, state.modified)

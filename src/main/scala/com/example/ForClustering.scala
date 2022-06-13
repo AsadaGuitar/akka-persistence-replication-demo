@@ -22,14 +22,13 @@ object ForClustering {
 
   def main(args: Array[String]): Unit = {
 
-    def extractArgs(args: Array[String]) =
+    val extractedArgs =
       if (args.length == 2 && args.head.matches("""^\d+$""") && args(1).nonEmpty)
         Some((args.head.toInt, args(1)))
       else None
 
-    extractArgs(args) match {
+    extractedArgs match {
       case Some((port, replicaId)) =>
-
         val config = {
           ConfigFactory.parseString(
             s"""
@@ -41,11 +40,10 @@ object ForClustering {
         implicit val system: ActorSystem[EmptyType] = ActorSystem[EmptyType](Behaviors.empty[EmptyType], "ForClustering", config)
         implicit val ec: ExecutionContextExecutor = system.executionContext
 
-        val allReplicas =
+        val allReplicas: Set[ReplicaId] =
           config.getStringList("akka.cluster.replication-nodes")
             .asScala.toSet
             .map(ReplicaId)
-
         val replicatedSharding: ReplicatedShardingExtension = ReplicatedShardingExtension(system)
 
         val httpHost = config.getString("akka.remote.artery.canonical.hostname")

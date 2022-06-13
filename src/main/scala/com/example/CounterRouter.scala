@@ -18,7 +18,7 @@ import scala.util.{Failure, Success}
 
 class CounterRouter(replicatedSharding: ReplicatedShardingExtension, allReplicas: Set[ReplicaId], replicaId: ReplicaId)(implicit system: ActorSystem[_]) {
 
-  implicit val timeout: Timeout = system.settings.config.getDuration("for-cluster.routes.ask-timeout").toMillis.millis
+  implicit val timeout: Timeout = system.settings.config.getDuration("for-clustering.routes.ask-timeout").toMillis.millis
   implicit val ec: ExecutionContext = system.executionContext
 
   private val counterReplicatedSharding = replicatedSharding.init(Counter.getProvider(allReplicas))
