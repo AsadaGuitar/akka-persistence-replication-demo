@@ -1,14 +1,13 @@
 package com.example
 
 import akka.Done
-import akka.actor.{AddressFromURIString, CoordinatedShutdown}
+import akka.actor.CoordinatedShutdown
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import akka.cluster.sharding.typed.ReplicatedShardingExtension
 import akka.http.scaladsl.Http
 import akka.persistence.typed.ReplicaId
-import akka.persistence.typed.scaladsl.ReplicatedEventSourcing
-import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.config.ConfigFactory
 
 import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.duration.DurationInt

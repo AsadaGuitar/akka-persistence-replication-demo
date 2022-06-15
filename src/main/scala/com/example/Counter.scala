@@ -3,7 +3,7 @@ package com.example
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
 import akka.cluster.sharding.typed.{ReplicatedEntityProvider, ReplicatedShardingExtension, ShardingEnvelope}
-import akka.persistence.query.journal.leveldb.scaladsl.LeveldbReadJournal
+import akka.persistence.cassandra.query.scaladsl.CassandraReadJournal
 import akka.persistence.typed.{PersistenceId, ReplicaId, ReplicationId}
 import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplicatedEventSourcing}
 
@@ -89,7 +89,7 @@ object Counter {
       ReplicatedEventSourcing.commonJournalConfig(
         replicationId,
         allReplicaIds,
-        LeveldbReadJournal.Identifier
+        CassandraReadJournal.Identifier
       ) { _ =>
         EventSourcedBehavior[Command,Event,State] (
           replicationId.persistenceId,

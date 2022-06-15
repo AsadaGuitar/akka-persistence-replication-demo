@@ -30,23 +30,33 @@ val akkaHttpVersion   = "10.2.9"
 val logbackVersion    = "1.2.9"
 val leveldbVersion    = "0.7"
 val leveldbjniVersion = "1.8"
+val cassandraVersion  = "1.0.5"
 
 lazy val forClustering = (project in file("."))
   .settings(commonSettings)
   .settings(
     name := "for_clustering",
     libraryDependencies ++= Seq(
-      "com.typesafe.akka"         %% "akka-actor-typed"            % akkaVersion,
-      "com.typesafe.akka"         %% "akka-cluster-sharding-typed" % akkaVersion,
-      "com.typesafe.akka"         %% "akka-persistence-typed"      % akkaVersion,
-      "com.typesafe.akka"         %% "akka-serialization-jackson"  % akkaVersion,
-      "com.typesafe.akka"         %% "akka-distributed-data"       % akkaVersion,
-      "com.typesafe.akka"         %% "akka-slf4j"                  % akkaVersion,
-      "com.typesafe.akka"         %% "akka-http"                   % akkaHttpVersion,
-      "com.typesafe.akka"         %% "akka-http-spray-json"        % akkaHttpVersion,
-      "ch.qos.logback"            %  "logback-classic"             % logbackVersion,
-      "org.iq80.leveldb"          % "leveldb"                      % leveldbVersion,
-      "org.fusesource.leveldbjni" % "leveldbjni-all"               % leveldbjniVersion,
+      // actor
+      "com.typesafe.akka"         %% "akka-actor-typed"                    % akkaVersion,
+      // persistence
+      "com.typesafe.akka"         %% "akka-persistence-typed"              % akkaVersion,
+      "com.typesafe.akka"         %% "akka-persistence-query"              % akkaVersion,
+      "com.typesafe.akka"         %% "akka-persistence-cassandra"          % cassandraVersion,
+      "com.typesafe.akka"         %% "akka-distributed-data"               % akkaVersion,
+      // cluster
+      "com.typesafe.akka"         %% "akka-cluster-sharding-typed"         % akkaVersion,
+      "com.typesafe.akka"         %% "akka-cluster-tools"                  % akkaVersion,
+      // http
+      "com.typesafe.akka"         %% "akka-http"                           % akkaHttpVersion,
+      "com.typesafe.akka"         %% "akka-http-spray-json"                % akkaHttpVersion,
+      // serialization
+      "com.typesafe.akka"         %% "akka-serialization-jackson"          % akkaVersion,
+      // logging
+      "com.typesafe.akka"         %% "akka-slf4j"                          % akkaVersion,
+      "ch.qos.logback"            %  "logback-classic"                     % logbackVersion,
+      "org.iq80.leveldb"          %  "leveldb"                             % leveldbVersion,
+      "org.fusesource.leveldbjni" %  "leveldbjni-all"                      % leveldbjniVersion,
     )
   )
 
