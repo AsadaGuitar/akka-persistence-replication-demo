@@ -1,1 +1,1 @@
-# akka-replicated-clustering
+# akka-persistence-replication
