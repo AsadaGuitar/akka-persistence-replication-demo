@@ -55,8 +55,6 @@ lazy val forClustering = (project in file("."))
       // logging
       "com.typesafe.akka"         %% "akka-slf4j"                          % akkaVersion,
       "ch.qos.logback"            %  "logback-classic"                     % logbackVersion,
-      "org.iq80.leveldb"          %  "leveldb"                             % leveldbVersion,
-      "org.fusesource.leveldbjni" %  "leveldbjni-all"                      % leveldbjniVersion,
     )
   )
 

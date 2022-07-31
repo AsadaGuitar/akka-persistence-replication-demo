@@ -1,1 +1,1 @@
-# for-clustering
+# akka-persistence-replication
