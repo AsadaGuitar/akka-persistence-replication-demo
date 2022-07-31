@@ -1,7 +1,7 @@
 package com.example
 
 import akka.actor.typed.ActorSystem
-import akka.cluster.sharding.typed.{ReplicatedSharding, ReplicatedShardingExtension}
+import akka.cluster.sharding.typed.ReplicatedShardingExtension
 import akka.event.Logging
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpResponse}
 import akka.http.scaladsl.model.StatusCodes.{InternalServerError, NotFound}

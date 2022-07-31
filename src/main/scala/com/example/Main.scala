@@ -15,9 +15,7 @@ import scala.jdk.CollectionConverters.ListHasAsScala
 import scala.util.{Failure, Success}
 
 
-object ForClustering {
-
-  trait EmptyType
+object Main {
 
   def main(args: Array[String]): Unit = {
 
@@ -36,7 +34,7 @@ object ForClustering {
             """
           ).withFallback(ConfigFactory.load("application.conf"))
         }
-        implicit val system: ActorSystem[EmptyType] = ActorSystem[EmptyType](Behaviors.empty[EmptyType], "ForClustering", config)
+        implicit val system: ActorSystem[Nothing] = ActorSystem[Nothing](Behaviors.empty, "clustering", config)
         implicit val ec: ExecutionContextExecutor = system.executionContext
 
         val allReplicas: Set[ReplicaId] =
@@ -80,7 +78,5 @@ object ForClustering {
 
         case None => sys.error("Invalid arguments.")
       }
-
   }
-
 }

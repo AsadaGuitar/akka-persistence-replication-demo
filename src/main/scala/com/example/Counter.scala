@@ -18,7 +18,7 @@ object Counter {
       copy(count = count + number, created, modified = Some(modified))
   }
 
-  sealed trait Command extends CborSerializable{
+  sealed trait Command extends CborSerializable {
     def resourceId: String
   }
   final case class CountUp(resourceId: String, number: Int, replyTo: ActorRef[Counting]) extends Command
